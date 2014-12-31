@@ -3,6 +3,8 @@ class FileUploader < CarrierWave::Uploader::Base
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
   # include CarrierWave::MiniMagick
+  #
+  attr_writer :filename
 
   # Choose what kind of storage to use for this uploader:
   storage :file
@@ -21,6 +23,10 @@ class FileUploader < CarrierWave::Uploader::Base
     else
       Rails.root.join(base_dir, model.bucket.name)
     end
+  end
+
+  def cache_dir
+    File.join('tmp', 'uploads')
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

@@ -10,22 +10,31 @@ class PerformDestroy
   end
 
   def call
-    send(DISPATCHER[@params['s3_action_perform']])
+    send(DISPATCHER[@params[:s3_action_perform]])
     remove_empty_directories
   end
 
   private
 
   def perform_rm_bucket
-    if (bucket = Bucket.find_by(name: @params['path']))
+    if (bucket = Bucket.find_by(name: @params[:path]))
       bucket.destroy
     end
   end
 
   def perform_rm_object
-    uri = "#{@params['path']}.#{@params['format']}"
-    if (s3o = S3Object.find_by(uri: uri))
+    if (s3o = S3Object.find_by(uri: @params[:s3_object_uri]))
       s3o.destroy
+    end
+  end
+
+  # http://docs.aws.amazon.com/AmazonS3/latest/API/mpUploadAbort.html
+  def perform_s3_multipart_abortion
+    if (s3o = S3Object.find_by(uri: @params[:s3_object_uri]))
+      s3o.destroy
+    end
+    if Dir.exist?((dir = File.join('tmp', 'multiparts', "s3o_#{@params['uploadId']}")))
+      FileUtils.rm_r(dir)
     end
   end
 
